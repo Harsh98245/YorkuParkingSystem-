@@ -1,0 +1,4 @@
+space_id, location, lot, status
+PS001,A1,LotA,Available
+PS002,A2,LotA,Maintenance
+PS003,B1,LotB,Occupied
