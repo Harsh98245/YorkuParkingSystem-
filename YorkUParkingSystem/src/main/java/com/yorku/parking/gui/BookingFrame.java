@@ -1,16 +1,20 @@
 package com.yorku.parking.gui;
 
+import com.yorku.parking.payment.*;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 import java.io.*;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.List;
 
 public class BookingFrame extends JFrame {
-    private JComboBox<String> parkingDropdown;
+    private JComboBox<String> parkingDropdown, startTimeDropdown, endTimeDropdown;
     private JTextField plateField;
-    private JComboBox<String> startTimeDropdown, endTimeDropdown;
     private JButton bookButton, backButton;
     private String username;
     private final Map<String, Double> rates = new HashMap<>();
@@ -118,21 +122,13 @@ public class BookingFrame extends JFrame {
         }
 
         double duration = (endIndex - startIndex) * 0.5;
-        int durationHours = (int) Math.ceil(duration); // Round up if needed for payment
+        int durationHours = (int) Math.ceil(duration);
 
-        double cost = getUserRate() * durationHours;
-        JOptionPane.showMessageDialog(this, "Booking successful!\nDeposit: $" + getUserRate() + "\nTotal: $" + cost);
+        double rate = getUserRate();
+        double cost = rate * durationHours;
 
-        try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/bookings.csv", true))) {
-            out.println(username + "," + plate + "," + selected + "," + durationHours);
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error saving booking to file.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        JOptionPane.showMessageDialog(this, "Booking successful!\nDeposit: $" + rate + "\nTotal: $" + cost);
 
-        updateSpaceStatus(selected, "Occupied");
-
-        dispose();
         new PaymentFrame(username, plate, selected, cost, () -> {
             saveBooking(username, selected, plate, durationHours);
             updateSpaceStatus(selected, "Occupied");

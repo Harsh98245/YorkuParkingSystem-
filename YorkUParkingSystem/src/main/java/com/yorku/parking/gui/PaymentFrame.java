@@ -1,138 +1,179 @@
 package com.yorku.parking.gui;
 
+import com.yorku.parking.payment.*;
+
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import com.yorku.parking.payment.*;
-import com.yorku.parking.utils.BookingUtil;
+import java.awt.event.ActionEvent;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Random;
 
 public class PaymentFrame extends JFrame {
-    private JTextField cardNumberField, expiryField, cvvField;
     private JComboBox<String> methodDropdown;
-    private final String username, plate, space;
-    private final int hours;
-	private double amount;
-	private Runnable onPaymentSuccess;
+    private JTextField cardNumberField, expiryField, cvvField;
+    private JTextField mobileNumberField, otpField;
+    private JButton payButton, cancelButton, sendOtpButton;
+    private JPanel inputPanel;
+    private String username, plate, space;
+    private double amount;
+    private Runnable onPaymentSuccess;
+    private String generatedOtp = "";
 
-    public PaymentFrame(String username, String plate, String space, double cost, Runnable onPaymentSuccess) {
+    public PaymentFrame(String username, String plate, String space, double amount, Runnable onPaymentSuccess) {
         this.username = username;
         this.plate = plate;
         this.space = space;
-        this.amount = cost;
+        this.amount = amount;
         this.onPaymentSuccess = onPaymentSuccess;
-		this.hours = 0;
 
         setTitle("Payment");
         setSize(420, 300);
-        setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
 
-        applyFlatLafStyling();
-
-        JPanel panel = new JPanel(new GridLayout(6, 2, 12, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        panel.setBackground(Color.WHITE);
-
-        panel.add(new JLabel("Payment Method:"));
+        JPanel methodPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        methodPanel.add(new JLabel("Payment Method:"));
         methodDropdown = new JComboBox<>(new String[]{"Credit Card", "Mobile Payment"});
-        panel.add(methodDropdown);
+        methodPanel.add(methodDropdown);
+        add(methodPanel, BorderLayout.NORTH);
 
-        panel.add(new JLabel("Card Number / Phone:"));
-        cardNumberField = new JTextField();
-        panel.add(cardNumberField);
+        inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        add(inputPanel, BorderLayout.CENTER);
 
-        panel.add(new JLabel("Expiry Date / UPI PIN:"));
-        expiryField = new JTextField();
-        panel.add(expiryField);
+        JPanel buttonPanel = new JPanel();
+        payButton = new JButton("Pay");
+        cancelButton = new JButton("Cancel");
+        buttonPanel.add(payButton);
+        buttonPanel.add(cancelButton);
+        add(buttonPanel, BorderLayout.SOUTH);
 
-        panel.add(new JLabel("CVV / PIN:"));
-        cvvField = new JTextField();
-        panel.add(cvvField);
+        methodDropdown.addActionListener(e -> updateFields());
+        payButton.addActionListener(this::handlePayment);
+        cancelButton.addActionListener(e -> dispose());
 
-        JButton payButton = new JButton("Pay Now");
-        payButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        payButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        payButton.addActionListener(e -> processPayment());
-
-        panel.add(new JLabel()); // empty cell
-        panel.add(payButton);
-
-        add(panel);
+        updateFields();
         setVisible(true);
     }
 
-    private void applyFlatLafStyling() {
-        UIManager.put("Button.arc", 20);
-        UIManager.put("Component.arc", 15);
-        UIManager.put("ProgressBar.arc", 15);
-        UIManager.put("TextComponent.arc", 10);
-        UIManager.put("Panel.background", Color.WHITE);
-        UIManager.put("Button.font", new Font("Segoe UI", Font.BOLD, 14));
-    }
-
-    private void processPayment() {
+    private void updateFields() {
+        inputPanel.removeAll();
         String method = (String) methodDropdown.getSelectedItem();
-        String number = cardNumberField.getText().trim();
-        String expiry = expiryField.getText().trim();
-        String cvv = cvvField.getText().trim();
 
-        if (number.isEmpty() || expiry.isEmpty() || cvv.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fill in all fields.");
-            return;
+        if ("Credit Card".equals(method)) {
+            cardNumberField = new JTextField();
+            expiryField = new JTextField();
+            cvvField = new JTextField();
+
+            inputPanel.add(new JLabel("Card Number:"));
+            inputPanel.add(cardNumberField);
+            inputPanel.add(new JLabel("Expiry Date (MM/YY):"));
+            inputPanel.add(expiryField);
+            inputPanel.add(new JLabel("CVV:"));
+            inputPanel.add(cvvField);
+        } else {
+            mobileNumberField = new JTextField();
+            otpField = new JTextField();
+            sendOtpButton = new JButton("Send OTP");
+
+            sendOtpButton.addActionListener(e -> {
+                generatedOtp = String.valueOf(new Random().nextInt(900000) + 100000);
+                JOptionPane.showMessageDialog(this, "OTP sent: " + generatedOtp);
+            });
+
+            inputPanel.add(new JLabel("Mobile Number:"));
+            inputPanel.add(mobileNumberField);
+            inputPanel.add(new JLabel("OTP (sent via email):"));
+            JPanel otpPanel = new JPanel(new BorderLayout());
+            otpPanel.add(otpField, BorderLayout.CENTER);
+            otpPanel.add(sendOtpButton, BorderLayout.EAST);
+            inputPanel.add(otpPanel);
         }
 
-        double rate = getUserRate();
-        double amount = rate * hours;
+        inputPanel.revalidate();
+        inputPanel.repaint();
+    }
 
+    private void handlePayment(ActionEvent e) {
+        String method = (String) methodDropdown.getSelectedItem();
         PaymentStrategy strategy;
+        String identifier;
+
         if ("Credit Card".equals(method)) {
+            String number = cardNumberField.getText().trim();
+            String expiry = expiryField.getText().trim();
+            String cvv = cvvField.getText().trim();
+
+            if (!number.matches("\\d{16}")) {
+                JOptionPane.showMessageDialog(this, "Card number must be 16 digits.");
+                return;
+            }
+
+            if (!cvv.matches("\\d{3}")) {
+                JOptionPane.showMessageDialog(this, "CVV must be 3 digits.");
+                return;
+            }
+
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
+                YearMonth expDate = YearMonth.parse(expiry, formatter);
+                YearMonth now = YearMonth.now();
+                YearMonth maxAllowed = YearMonth.now().plusYears(4);
+                if (expDate.isBefore(now) || expDate.isAfter(maxAllowed)) {
+                    JOptionPane.showMessageDialog(this, "Expiry date must be within 4 years from now.");
+                    return;
+                }
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(this, "Invalid expiry date format. Use MM/YY.");
+                return;
+            }
+
             strategy = new CreditCardPayment(number, expiry, cvv);
+            identifier = number;
+
         } else {
-            strategy = new MobilePayment(number, cvv);
+            String mobile = mobileNumberField.getText().trim();
+            String otp = otpField.getText().trim();
+
+            if (!mobile.matches("\\d{10}")) {
+                JOptionPane.showMessageDialog(this, "Mobile number must be 10 digits.");
+                return;
+            }
+
+            if (!otp.equals(generatedOtp)) {
+                JOptionPane.showMessageDialog(this, "Incorrect OTP.");
+                return;
+            }
+
+            strategy = new MobilePayment(mobile, otp);
+            identifier = mobile;
         }
 
         PaymentContext context = new PaymentContext(strategy);
         boolean success = context.processPayment(amount);
 
         if (success) {
-            BookingUtil.saveBooking(username, plate, space, hours);
-            BookingUtil.updateSpaceStatus(space, "Occupied");
-            logPayment(method, number);
+            logPayment(method, identifier);
             JOptionPane.showMessageDialog(this, "Payment Successful. Thank you!");
             dispose();
+            if (onPaymentSuccess != null) {
+                onPaymentSuccess.run();
+            }
         } else {
             JOptionPane.showMessageDialog(this, "Payment Failed. Try again.");
         }
     }
 
-    private double getUserRate() {
-        Map<String, Double> rates = new HashMap<>();
-        rates.put("Student", 5.0);
-        rates.put("Faculty", 8.0);
-        rates.put("NonFaculty", 10.0);
-        rates.put("Visitor", 15.0);
-
-        try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/users.csv"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length >= 3 && parts[0].equalsIgnoreCase(username)) {
-                    return rates.getOrDefault(parts[2].trim(), 15.0);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 15.0; // Default fallback
-    }
-
     private void logPayment(String method, String number) {
         try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/payments.csv", true))) {
-            out.println(username + "," + method + "," + number + "," + plate + "," + space + "," + hours);
-        } catch (IOException e) {
-            e.printStackTrace();
+            out.println(username + "," + method + "," + number + "," + amount);
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 }

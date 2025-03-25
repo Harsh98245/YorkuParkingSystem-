@@ -12,8 +12,8 @@ PS010,A10,Occupied
 PS011,A11,Occupied
 PS012,A12,LotA,Occupied
 PS013,A13,Occupied
-PS014,A14,LotA,Available
-PS015,A15,LotA,Available
+PS014,A14,LotA,Occupied
+PS015,A15,LotA,Occupied
 PS016,A16,LotA,Available
 PS017,A17,LotA,Available
 PS018,A18,LotA,Available
