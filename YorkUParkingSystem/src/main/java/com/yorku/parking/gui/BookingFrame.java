@@ -121,19 +121,7 @@ public class BookingFrame extends JFrame {
         int durationHours = (int) Math.ceil(duration); // Round up if needed for payment
 
         double cost = getUserRate() * durationHours;
-        double deposit=getUserRate();
-        dispose(); // Close booking window before opening payment
-        new PaymentFrame(username, plate, selected, cost, () -> {
-            saveBooking(username, selected, plate, durationHours);
-            updateSpaceStatus(selected, "Occupied");
-            
-            		JOptionPane.showMessageDialog(null,
-            			    "Booking successful!\nDeposit: $" + deposit + "\nTotal: $" + cost,
-            			    "Payment Success",
-            			    JOptionPane.INFORMATION_MESSAGE);
-
-            new DashboardFrame(username, false);
-        });
+        JOptionPane.showMessageDialog(this, "Booking successful!\nDeposit: $" + getUserRate() + "\nTotal: $" + cost);
 
         try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/bookings.csv", true))) {
             out.println(username + "," + plate + "," + selected + "," + durationHours);

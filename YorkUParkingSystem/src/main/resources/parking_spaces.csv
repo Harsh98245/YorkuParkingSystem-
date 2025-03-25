@@ -8,9 +8,9 @@ PS006,A6,Available
 PS007,A7,Occupied
 PS008,A8,Occupied
 PS009,A9,Occupied
-PS010,A10,LotA,Available
-PS011,A11,LotA,Available
-PS012,A12,LotA,Available
+PS010,A10,Occupied
+PS011,A11,Occupied
+PS012,A12,LotA,Occupied
 PS013,A13,Occupied
 PS014,A14,LotA,Available
 PS015,A15,LotA,Available
