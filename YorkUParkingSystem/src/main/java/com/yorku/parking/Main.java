@@ -1,7 +1,7 @@
 package com.yorku.parking;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.yorku.parking.gui.LoginFrame;
+import com.yorku.parking.gui.WelcomeFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,6 +27,6 @@ public class Main {
         }
 
         // Launch the Login GUI
-        SwingUtilities.invokeLater(LoginFrame::new);
+        SwingUtilities.invokeLater(WelcomeFrame::new);
     }
 }

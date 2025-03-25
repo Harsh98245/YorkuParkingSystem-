@@ -1,4 +1,3 @@
-// ✅ RegisterFrame.java (Final Version)
 package com.yorku.parking.gui;
 
 import javax.swing.*;
@@ -10,7 +9,7 @@ public class RegisterFrame extends JFrame {
     private JTextField emailField;
     private JPasswordField passwordField;
     private JRadioButton studentBtn, facultyBtn, nonFacultyBtn, visitorBtn;
-    private JButton registerBtn;
+    private JButton registerBtn, backBtn;
 
     public RegisterFrame() {
         setTitle("Register");
@@ -34,6 +33,7 @@ public class RegisterFrame extends JFrame {
         facultyBtn = new JRadioButton("Faculty");
         nonFacultyBtn = new JRadioButton("NonFaculty");
         visitorBtn = new JRadioButton("Visitor");
+
         ButtonGroup roleGroup = new ButtonGroup();
         roleGroup.add(studentBtn);
         roleGroup.add(facultyBtn);
@@ -45,10 +45,20 @@ public class RegisterFrame extends JFrame {
         rolePanel.add(visitorBtn);
         panel.add(rolePanel);
 
+        // Register and Back buttons side by side
+        JPanel buttonPanel = new JPanel(new FlowLayout());
         registerBtn = new JButton("Register");
-        panel.add(registerBtn);
+        backBtn = new JButton("Back");
+        buttonPanel.add(registerBtn);
+        buttonPanel.add(backBtn);
+        panel.add(new JLabel()); // Placeholder
+        panel.add(buttonPanel);
 
         registerBtn.addActionListener(this::registerUser);
+        backBtn.addActionListener(e -> {
+            dispose();
+            new WelcomeFrame();
+        });
 
         add(panel);
         setVisible(true);
@@ -77,6 +87,6 @@ public class RegisterFrame extends JFrame {
 
         JOptionPane.showMessageDialog(this, "Registration successful!");
         dispose();
-        new LoginFrame(); // auto-login redirection
+        new WelcomeFrame(); // auto-login redirection
     }
 }
