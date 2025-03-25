@@ -12,9 +12,11 @@ import java.io.*;
 public class LoginFrame extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private JRadioButton studentBtn, facultyBtn, nonFacultyBtn, visitorBtn;
+    private ButtonGroup roleGroup;
 
     public LoginFrame() {
-        FlatLightLaf.setup(); // Apply modern theme
+        FlatLightLaf.setup(); // FlatLaf modern theme
         UIManager.put("Button.arc", 20);
         UIManager.put("Component.arc", 15);
         UIManager.put("TextComponent.arc", 10);
@@ -22,27 +24,47 @@ public class LoginFrame extends JFrame {
         UIManager.put("Button.font", new Font("Segoe UI", Font.BOLD, 14));
 
         setTitle("🚗 YorkU Parking System - Login");
-        setSize(420, 280);
+        setSize(420, 330);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Panel setup with MigLayout
-        JPanel panel = new JPanel(new MigLayout("wrap 2", "[right][grow,fill]", "[]15[]15[]20[]"));
+        JPanel panel = new JPanel(new MigLayout("wrap 2", "[right][grow,fill]", "[]10[]10[]10[]10[]20[]"));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
-        JLabel userLabel = new JLabel("👤 Username:");
-        JLabel passLabel = new JLabel("🔒 Password:");
         usernameField = new JTextField();
         passwordField = new JPasswordField();
+
+        panel.add(new JLabel("👤 Username/Email:"));
+        panel.add(usernameField);
+        panel.add(new JLabel("🔒 Password:"));
+        panel.add(passwordField);
+
+        panel.add(new JLabel("🎓 Select your role:"), "span 2");
+
+        studentBtn = new JRadioButton("Student");
+        facultyBtn = new JRadioButton("Faculty");
+        nonFacultyBtn = new JRadioButton("NonFaculty");
+        visitorBtn = new JRadioButton("Visitor");
+
+        roleGroup = new ButtonGroup();
+        roleGroup.add(studentBtn);
+        roleGroup.add(facultyBtn);
+        roleGroup.add(nonFacultyBtn);
+        roleGroup.add(visitorBtn);
+
+        JPanel rolePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        rolePanel.setBackground(Color.WHITE);
+        rolePanel.add(studentBtn);
+        rolePanel.add(facultyBtn);
+        rolePanel.add(nonFacultyBtn);
+        rolePanel.add(visitorBtn);
+
+        panel.add(rolePanel, "span 2");
 
         JButton loginButton = new JButton("Login");
         JButton registerButton = new JButton("Register");
 
-        panel.add(userLabel);
-        panel.add(usernameField);
-        panel.add(passLabel);
-        panel.add(passwordField);
-        panel.add(loginButton, "span, split 2, center, width 100!");
+        panel.add(loginButton, "split 2, center, width 100!");
         panel.add(registerButton, "width 100!");
 
         loginButton.addActionListener(e -> login());
@@ -76,8 +98,14 @@ public class LoginFrame extends JFrame {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
 
+        String role = getSelectedRole();
+        if (role == null) {
+            JOptionPane.showMessageDialog(this, "⚠️ Please select a role.", "Role Missing", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         if (!password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$")) {
-            JOptionPane.showMessageDialog(this, "🔐 Password must contain uppercase, lowercase, number, and symbol.", "Weak Password", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "🔐 Password must include uppercase, lowercase, digit, and symbol.", "Weak Password", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -99,9 +127,16 @@ public class LoginFrame extends JFrame {
         }
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/users.csv", true))) {
-            writer.write(username + "," + password);
+            writer.write(username + "," + password + "," + role);
             writer.newLine();
-            JOptionPane.showMessageDialog(this, "🎉 Registration Successful!");
+            JOptionPane.showMessageDialog(this, "🎉 Registration Successful! Auto-logging in...");
+
+            // Auto-login
+            SessionManager.login(username);
+            dispose();
+            boolean isManager = checkIfManager(username);
+            new DashboardFrame(username, isManager);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -124,5 +159,13 @@ public class LoginFrame extends JFrame {
 
     private boolean checkIfManager(String username) {
         return username.toLowerCase().contains("manager") || username.toLowerCase().contains("admin");
+    }
+
+    private String getSelectedRole() {
+        if (studentBtn.isSelected()) return "Student";
+        if (facultyBtn.isSelected()) return "Faculty";
+        if (nonFacultyBtn.isSelected()) return "NonFaculty Staff";
+        if (visitorBtn.isSelected()) return "Visitor";
+        return null;
     }
 }
