@@ -1,5 +1,6 @@
-id,user,parkingSpot,time
-1,john.doe@yorku.ca,Spot A,10:00 AM
-2,jane.smith@yorku.ca,Spot B,11:30 AM
-john.doe@yorku.ca,1 - Lot A
-john.doe@yorku.ca,1 - Lot A
+email,plate,parkingSpot,duration
+john.doe@yorku.ca,AB1234,PS001 - A1 (LotA),2
+jane.smith@yorku.ca,CD5678,PS002 - A2 (LotA),1
+pratham@gmail.com,nadcxjnh,PS001 - A1 (LotA),2
+pratham@gmail.com,dhue,PS002 - A2 (LotA),2
+Harsh011@my.yorku.ca,harsjnmm,PS003 - A3 (LotA),15

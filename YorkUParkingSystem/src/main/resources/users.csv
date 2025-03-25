@@ -2,3 +2,6 @@ id,email,password,role
 1,john.doe@yorku.ca,Pass123!,student
 2,jane.smith@yorku.ca,SecurePass!,faculty
 john.doe@yorku.ca,Pass123!
+Harsh011,Harsh@11
+Harsh011@my.yorku.ca,Harsh011@
+pratham@gmail.com,Pass@123

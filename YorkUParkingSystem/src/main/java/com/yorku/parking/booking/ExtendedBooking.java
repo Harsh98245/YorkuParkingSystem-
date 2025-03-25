@@ -20,4 +20,23 @@ public class ExtendedBooking implements Booking {
     public double getCost() {
         return booking.getCost() + (extraHours * extraRatePerHour);
     }
+
+    public int getExtraHours() {
+        return extraHours;
+    }
+
+    public void setExtraHours(int extraHours) {
+        if (extraHours < 0) {
+            throw new IllegalArgumentException("Extra hours cannot be negative.");
+        }
+        this.extraHours = extraHours;
+    }
+
+    public Booking getBaseBooking() {
+        return booking;
+    }
+
+    public double getExtraCost() {
+        return extraHours * extraRatePerHour;
+    }
 }

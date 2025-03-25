@@ -1,5 +1,8 @@
 package com.yorku.parking.gui;
 
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import net.miginfocom.swing.MigLayout;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -8,70 +11,60 @@ import java.util.*;
 import java.util.List;
 import java.util.ArrayList;
 
+
 public class AdminPanel extends JFrame {
     private JTextArea logArea;
-    private JComboBox<String> userDropdown;
-    private JComboBox<String> parkingLotDropdown;
-    private JComboBox<String> parkingSpaceDropdown;
-    private JButton disableUserButton, enableUserButton, deleteUserButton, 
+    private JComboBox<String> userDropdown, parkingLotDropdown, parkingSpaceDropdown;
+    private JButton disableUserButton, enableUserButton, deleteUserButton,
                     updateRatesButton, generateManagerButton,
                     addLotButton, disableLotButton, enableLotButton,
                     disableSpaceButton, enableSpaceButton;
 
     public AdminPanel(boolean isSuperManager) {
-        setTitle("Admin Panel - Manager");
-        setSize(750, 500);
+        try {
+            UIManager.setLookAndFeel(new FlatIntelliJLaf());
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+
+        UIManager.put("Button.arc", 20);
+        UIManager.put("Component.arc", 15);
+        UIManager.put("ProgressBar.arc", 15);
+        UIManager.put("TextComponent.arc", 10);
+        UIManager.put("Panel.background", Color.WHITE);
+        UIManager.put("Button.font", new Font("Segoe UI", Font.BOLD, 14));
+
+        setTitle("Admin Panel - " + (isSuperManager ? "Super Manager" : "Manager"));
+        setSize(900, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout());
+        setLayout(new MigLayout("fill, wrap 2", "[grow][fill, 300!]", "[grow]"));
 
         logArea = new JTextArea();
         logArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(logArea);
+        add(scrollPane, "span 2, grow, wrap");
 
-        JPanel controlPanel = new JPanel(new GridLayout(15, 1, 5, 5));
-
-        userDropdown = new JComboBox<>(loadUsers());
-        controlPanel.add(userDropdown);
-
-        disableUserButton = new JButton("Disable User");
-        enableUserButton = new JButton("Enable User");
-        deleteUserButton = new JButton("Delete User");
-        updateRatesButton = new JButton("Update Parking Rates");
-        generateManagerButton = new JButton("Generate Manager Accounts");
+        JPanel panel = new JPanel(new MigLayout("wrap 1, fillx, insets 10", "[fill]"));
+        panel.setBackground(Color.WHITE);
 
         if (isSuperManager) {
-            controlPanel.add(disableUserButton);
-            controlPanel.add(enableUserButton);
-            controlPanel.add(deleteUserButton);
-            controlPanel.add(updateRatesButton);
-            controlPanel.add(generateManagerButton);
-        }
+            panel.add(new JLabel("User Management"), "gapy 10");
+            userDropdown = new JComboBox<>(loadUsers());
+            panel.add(userDropdown);
 
-        controlPanel.add(new JLabel("--- Parking Lot Management ---"));
-        parkingLotDropdown = new JComboBox<>(loadParkingLots());
-        controlPanel.add(parkingLotDropdown);
+            disableUserButton = new JButton("Disable User");
+            enableUserButton = new JButton("Enable User");
+            deleteUserButton = new JButton("Delete User");
+            updateRatesButton = new JButton("Update Parking Rates");
+            generateManagerButton = new JButton("Generate Manager Accounts");
 
-        addLotButton = new JButton("Add New Parking Lot");
-        enableLotButton = new JButton("Enable Parking Lot");
-        disableLotButton = new JButton("Disable Parking Lot");
-        controlPanel.add(addLotButton);
-        controlPanel.add(enableLotButton);
-        controlPanel.add(disableLotButton);
+            panel.add(disableUserButton);
+            panel.add(enableUserButton);
+            panel.add(deleteUserButton);
+            panel.add(updateRatesButton);
+            panel.add(generateManagerButton);
 
-        controlPanel.add(new JLabel("--- Parking Space Management ---"));
-        parkingSpaceDropdown = new JComboBox<>(loadParkingSpaces());
-        controlPanel.add(parkingSpaceDropdown);
-        enableSpaceButton = new JButton("Enable Parking Space");
-        disableSpaceButton = new JButton("Disable Parking Space");
-        controlPanel.add(enableSpaceButton);
-        controlPanel.add(disableSpaceButton);
-
-        add(scrollPane, BorderLayout.CENTER);
-        add(controlPanel, BorderLayout.EAST);
-
-        // Button actions (restricted by role)
-        if (isSuperManager) {
             disableUserButton.addActionListener(e -> updateUser("disabled"));
             enableUserButton.addActionListener(e -> updateUser("enabled"));
             deleteUserButton.addActionListener(e -> deleteUser());
@@ -79,12 +72,36 @@ public class AdminPanel extends JFrame {
             generateManagerButton.addActionListener(e -> generateManagerAccounts());
         }
 
+        panel.add(new JLabel("Parking Lot Management"), "gapy 10");
+        parkingLotDropdown = new JComboBox<>(loadParkingLots());
+        panel.add(parkingLotDropdown);
+
+        addLotButton = new JButton("Add Parking Lot");
+        enableLotButton = new JButton("Enable Parking Lot");
+        disableLotButton = new JButton("Disable Parking Lot");
+
+        panel.add(addLotButton);
+        panel.add(enableLotButton);
+        panel.add(disableLotButton);
+
         addLotButton.addActionListener(e -> addParkingLot());
         enableLotButton.addActionListener(e -> updateLotStatus("enabled"));
         disableLotButton.addActionListener(e -> updateLotStatus("disabled"));
+
+        panel.add(new JLabel("Parking Space Management"), "gapy 10");
+        parkingSpaceDropdown = new JComboBox<>(loadParkingSpaces());
+        panel.add(parkingSpaceDropdown);
+
+        enableSpaceButton = new JButton("Enable Parking Space");
+        disableSpaceButton = new JButton("Disable Parking Space");
+
+        panel.add(enableSpaceButton);
+        panel.add(disableSpaceButton);
+
         enableSpaceButton.addActionListener(e -> updateSpaceStatus("enabled"));
         disableSpaceButton.addActionListener(e -> updateSpaceStatus("disabled"));
 
+        add(panel);
         setVisible(true);
     }
 
@@ -119,7 +136,6 @@ public class AdminPanel extends JFrame {
     private void updateUser(String status) {
         String selectedUser = (String) userDropdown.getSelectedItem();
         if (selectedUser == null) return;
-
         List<String> updated = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/users.csv"))) {
             String line;
@@ -140,16 +156,15 @@ public class AdminPanel extends JFrame {
                 writer.write(entry);
                 writer.newLine();
             }
-            logArea.append("User " + selectedUser + " updated to " + status + ".\n");
+            logArea.append("User " + selectedUser + " updated to " + status + "\n");
         } catch (IOException e) {
-            logArea.append("Error saving user data.\n");
+            logArea.append("Error writing user file.\n");
         }
     }
 
     private void deleteUser() {
         String selectedUser = (String) userDropdown.getSelectedItem();
         if (selectedUser == null) return;
-
         List<String> retained = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/users.csv"))) {
             String line;
@@ -161,7 +176,6 @@ public class AdminPanel extends JFrame {
         } catch (IOException e) {
             logArea.append("Error deleting user.\n");
         }
-
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/users.csv"))) {
             for (String entry : retained) {
                 writer.write(entry);
@@ -169,12 +183,12 @@ public class AdminPanel extends JFrame {
             }
             logArea.append("User " + selectedUser + " deleted.\n");
         } catch (IOException e) {
-            logArea.append("Error saving users.\n");
+            logArea.append("Error saving user file.\n");
         }
     }
 
     private void updateRates() {
-        String input = JOptionPane.showInputDialog(this, "Enter new rates (Student,Faculty,Staff,Visitor):");
+        String input = JOptionPane.showInputDialog(this, "Enter rates (Student,Faculty,Staff,Visitor):");
         if (input != null && input.matches("\\d+(,\\d+){3}")) {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/rates.csv"))) {
                 writer.write(input);
@@ -189,7 +203,7 @@ public class AdminPanel extends JFrame {
 
     private void generateManagerAccounts() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("src/main/resources/users.csv", true))) {
-            String input = JOptionPane.showInputDialog(this, "Enter number of manager accounts to generate:");
+            String input = JOptionPane.showInputDialog(this, "Enter number of accounts to generate:");
             if (input == null) return;
             int count = Integer.parseInt(input);
             for (int i = 0; i < count; i++) {
@@ -205,9 +219,9 @@ public class AdminPanel extends JFrame {
     }
 
     private void addParkingLot() {
-        String name = JOptionPane.showInputDialog(this, "Enter new Parking Lot name:");
+        String name = JOptionPane.showInputDialog(this, "Enter Parking Lot name:");
         if (name != null && !name.isEmpty()) {
-            logArea.append("Parking Lot '" + name + "' added with 100 spaces.\n");
+            logArea.append("Parking Lot '" + name + "' added.\n");
         }
     }
 
@@ -221,7 +235,7 @@ public class AdminPanel extends JFrame {
     private void updateSpaceStatus(String status) {
         String space = (String) parkingSpaceDropdown.getSelectedItem();
         if (space != null) {
-            logArea.append("Parking Space " + space + " marked as " + status + ".\n");
+            logArea.append("Space " + space + " marked as " + status + ".\n");
         }
     }
 }

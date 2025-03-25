@@ -13,12 +13,16 @@ public class PaymentFrame extends JFrame {
     private JComboBox<String> methodDropdown;
     private JTextField cardNumberField, expiryField, cvvField;
     private JButton payButton, cancelButton;
-    private String username;
+    private String username, plate, space;
     private double amount;
+    private Runnable onPaymentSuccess;
 
-    public PaymentFrame(String username, double amount) {
+    public PaymentFrame(String username, String plate, String space, double amount, Runnable onPaymentSuccess) {
         this.username = username;
+        this.plate = plate;
+        this.space = space;
         this.amount = amount;
+        this.onPaymentSuccess = onPaymentSuccess;
 
         setTitle("Payment");
         setSize(400, 300);
@@ -81,6 +85,9 @@ public class PaymentFrame extends JFrame {
             logPayment(method, number);
             JOptionPane.showMessageDialog(this, "Payment Successful. Thank you!");
             dispose();
+            if (onPaymentSuccess != null) {
+                onPaymentSuccess.run();
+            }
         } else {
             JOptionPane.showMessageDialog(this, "Payment Failed. Try again.");
         }
