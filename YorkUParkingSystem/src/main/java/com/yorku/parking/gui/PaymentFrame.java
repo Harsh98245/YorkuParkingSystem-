@@ -1,103 +1,138 @@
 package com.yorku.parking.gui;
 
-import com.yorku.parking.payment.*;
-
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import com.yorku.parking.payment.*;
+import com.yorku.parking.utils.BookingUtil;
 
 public class PaymentFrame extends JFrame {
-    private JComboBox<String> methodDropdown;
     private JTextField cardNumberField, expiryField, cvvField;
-    private JButton payButton, cancelButton;
-    private String username, plate, space;
-    private double amount;
-    private Runnable onPaymentSuccess;
+    private JComboBox<String> methodDropdown;
+    private final String username, plate, space;
+    private final int hours;
+	private double amount;
+	private Runnable onPaymentSuccess;
 
-    public PaymentFrame(String username, String plate, String space, double amount, Runnable onPaymentSuccess) {
+    public PaymentFrame(String username, String plate, String space, double cost, Runnable onPaymentSuccess) {
         this.username = username;
         this.plate = plate;
         this.space = space;
-        this.amount = amount;
+        this.amount = cost;
         this.onPaymentSuccess = onPaymentSuccess;
+		this.hours = 0;
 
         setTitle("Payment");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(420, 300);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        applyFlatLafStyling();
+
+        JPanel panel = new JPanel(new GridLayout(6, 2, 12, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(Color.WHITE);
 
         panel.add(new JLabel("Payment Method:"));
         methodDropdown = new JComboBox<>(new String[]{"Credit Card", "Mobile Payment"});
         panel.add(methodDropdown);
 
-        panel.add(new JLabel("Card/Mobile Number:"));
+        panel.add(new JLabel("Card Number / Phone:"));
         cardNumberField = new JTextField();
         panel.add(cardNumberField);
 
-        panel.add(new JLabel("Expiry Date (MM/YY):"));
+        panel.add(new JLabel("Expiry Date / UPI PIN:"));
         expiryField = new JTextField();
         panel.add(expiryField);
 
-        panel.add(new JLabel("CVV / Pin:"));
+        panel.add(new JLabel("CVV / PIN:"));
         cvvField = new JTextField();
         panel.add(cvvField);
 
-        payButton = new JButton("Pay");
-        cancelButton = new JButton("Cancel");
+        JButton payButton = new JButton("Pay Now");
+        payButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        payButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        payButton.addActionListener(e -> processPayment());
 
+        panel.add(new JLabel()); // empty cell
         panel.add(payButton);
-        panel.add(cancelButton);
-
-        payButton.addActionListener(this::handlePayment);
-        cancelButton.addActionListener(e -> dispose());
 
         add(panel);
         setVisible(true);
     }
 
-    private void handlePayment(ActionEvent e) {
+    private void applyFlatLafStyling() {
+        UIManager.put("Button.arc", 20);
+        UIManager.put("Component.arc", 15);
+        UIManager.put("ProgressBar.arc", 15);
+        UIManager.put("TextComponent.arc", 10);
+        UIManager.put("Panel.background", Color.WHITE);
+        UIManager.put("Button.font", new Font("Segoe UI", Font.BOLD, 14));
+    }
+
+    private void processPayment() {
         String method = (String) methodDropdown.getSelectedItem();
         String number = cardNumberField.getText().trim();
         String expiry = expiryField.getText().trim();
         String cvv = cvvField.getText().trim();
 
         if (number.isEmpty() || expiry.isEmpty() || cvv.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fill all fields.");
+            JOptionPane.showMessageDialog(this, "Please fill in all fields.");
             return;
         }
 
+        double rate = getUserRate();
+        double amount = rate * hours;
+
         PaymentStrategy strategy;
-        if (method.equals("Credit Card")) {
+        if ("Credit Card".equals(method)) {
             strategy = new CreditCardPayment(number, expiry, cvv);
         } else {
-            strategy = new MobilePayment(number, cvv); // expiry not used
+            strategy = new MobilePayment(number, cvv);
         }
 
         PaymentContext context = new PaymentContext(strategy);
         boolean success = context.processPayment(amount);
 
         if (success) {
+            BookingUtil.saveBooking(username, plate, space, hours);
+            BookingUtil.updateSpaceStatus(space, "Occupied");
             logPayment(method, number);
             JOptionPane.showMessageDialog(this, "Payment Successful. Thank you!");
             dispose();
-            if (onPaymentSuccess != null) {
-                onPaymentSuccess.run();
-            }
         } else {
             JOptionPane.showMessageDialog(this, "Payment Failed. Try again.");
         }
     }
 
+    private double getUserRate() {
+        Map<String, Double> rates = new HashMap<>();
+        rates.put("Student", 5.0);
+        rates.put("Faculty", 8.0);
+        rates.put("NonFaculty", 10.0);
+        rates.put("Visitor", 15.0);
+
+        try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/users.csv"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 3 && parts[0].equalsIgnoreCase(username)) {
+                    return rates.getOrDefault(parts[2].trim(), 15.0);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 15.0; // Default fallback
+    }
+
     private void logPayment(String method, String number) {
         try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/payments.csv", true))) {
-            out.println(username + "," + method + "," + number + "," + amount);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+            out.println(username + "," + method + "," + number + "," + plate + "," + space + "," + hours);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

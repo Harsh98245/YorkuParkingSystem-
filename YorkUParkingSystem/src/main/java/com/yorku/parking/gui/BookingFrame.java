@@ -5,11 +5,13 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 public class BookingFrame extends JFrame {
     private JComboBox<String> parkingDropdown;
-    private JTextField plateField, hoursField;
-    private JButton bookButton, cancelButton, extendButton, backButton;
+    private JTextField plateField;
+    private JComboBox<String> startTimeDropdown, endTimeDropdown;
+    private JButton bookButton, backButton;
     private String username;
     private final Map<String, Double> rates = new HashMap<>();
 
@@ -35,28 +37,38 @@ public class BookingFrame extends JFrame {
         parkingDropdown = new JComboBox<>(loadAvailableSpaces());
         panel.add(parkingDropdown);
 
-        panel.add(new JLabel("Booking Duration (hrs):"));
-        hoursField = new JTextField();
-        panel.add(hoursField);
+        panel.add(new JLabel("Start Time:"));
+        startTimeDropdown = new JComboBox<>(generateTimeOptions());
+        panel.add(startTimeDropdown);
+
+        panel.add(new JLabel("End Time:"));
+        endTimeDropdown = new JComboBox<>(generateTimeOptions());
+        panel.add(endTimeDropdown);
 
         bookButton = new JButton("Book");
-        cancelButton = null;
-        extendButton = null;
         backButton = new JButton("Back");
 
         panel.add(bookButton);
-       
         panel.add(backButton);
 
         bookButton.addActionListener(e -> bookSpace());
-        
         backButton.addActionListener(e -> goBack());
+
         add(panel);
         setVisible(true);
     }
 
+    private String[] generateTimeOptions() {
+        List<String> times = new ArrayList<>();
+        for (int hour = 0; hour < 24; hour++) {
+            times.add(String.format("%02d:00", hour));
+            times.add(String.format("%02d:30", hour));
+        }
+        return times.toArray(new String[0]);
+    }
+
     private String[] loadAvailableSpaces() {
-        java.util.List<String> available = new ArrayList<>();
+        List<String> available = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/parking_spaces.csv"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -71,13 +83,15 @@ public class BookingFrame extends JFrame {
         }
         return available.toArray(new String[0]);
     }
+
     private void goBack() {
-    	dispose();
-    	new DashboardFrame(username,false);
+        dispose();
+        new DashboardFrame(username, false);
     }
-    private void saveBooking(String username, String space, String plate, int hours) {
+
+    private void saveBooking(String username, String space, String plate, int duration) {
         try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/bookings.csv", true))) {
-            out.println(username + "," + plate + "," + space + "," + hours);
+            out.println(username + "," + plate + "," + space + "," + duration);
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error saving booking to file.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -87,43 +101,58 @@ public class BookingFrame extends JFrame {
     private void bookSpace() {
         String plate = plateField.getText().trim();
         String selected = (String) parkingDropdown.getSelectedItem();
-        String durationText = hoursField.getText().trim();
-        
+        String startTimeStr = (String) startTimeDropdown.getSelectedItem();
+        String endTimeStr = (String) endTimeDropdown.getSelectedItem();
 
-        if (plate.isEmpty() || selected == null || durationText.isEmpty()) {
+        if (plate.isEmpty() || selected == null || startTimeStr == null || endTimeStr == null) {
             JOptionPane.showMessageDialog(this, "Please fill all fields.");
             return;
         }
 
-        try {
-            int hours = Integer.parseInt(durationText);
-            double cost = getUserRate() * hours;
-            JOptionPane.showMessageDialog(this, "Booking successful!\nDeposit: $" + getUserRate() + "\nTotal: $" + cost);
+        int startIndex = startTimeDropdown.getSelectedIndex();
+        int endIndex = endTimeDropdown.getSelectedIndex();
 
-            try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/bookings.csv", true))) {
-                out.println(username + "," + plate + "," + selected + "," + hours);
-            } catch (IOException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error saving booking to file.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-
-            updateSpaceStatus(selected, "Occupied");
-
-            dispose();
-            new PaymentFrame(username, plate, selected, cost, () -> {
-                saveBooking(username, selected, plate, hours);
-                updateSpaceStatus(selected, "Occupied");
-                JOptionPane.showMessageDialog(this, "Booking confirmed and paid!");
-                dispose();
-                new DashboardFrame(username, false); // or true if manager
-            });
-
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Invalid hours.");
+        if (endIndex <= startIndex) {
+            JOptionPane.showMessageDialog(this, "End time must be after start time.");
+            return;
         }
-    }
 
-    
+        double duration = (endIndex - startIndex) * 0.5;
+        int durationHours = (int) Math.ceil(duration); // Round up if needed for payment
+
+        double cost = getUserRate() * durationHours;
+        double deposit=getUserRate();
+        dispose(); // Close booking window before opening payment
+        new PaymentFrame(username, plate, selected, cost, () -> {
+            saveBooking(username, selected, plate, durationHours);
+            updateSpaceStatus(selected, "Occupied");
+            
+            		JOptionPane.showMessageDialog(null,
+            			    "Booking successful!\nDeposit: $" + deposit + "\nTotal: $" + cost,
+            			    "Payment Success",
+            			    JOptionPane.INFORMATION_MESSAGE);
+
+            new DashboardFrame(username, false);
+        });
+
+        try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/bookings.csv", true))) {
+            out.println(username + "," + plate + "," + selected + "," + durationHours);
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error saving booking to file.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        updateSpaceStatus(selected, "Occupied");
+
+        dispose();
+        new PaymentFrame(username, plate, selected, cost, () -> {
+            saveBooking(username, selected, plate, durationHours);
+            updateSpaceStatus(selected, "Occupied");
+            JOptionPane.showMessageDialog(this, "Booking confirmed and paid!");
+            dispose();
+            new DashboardFrame(username, false);
+        });
+    }
 
     private double getUserRate() {
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/users.csv"))) {
@@ -141,7 +170,7 @@ public class BookingFrame extends JFrame {
     }
 
     private void updateSpaceStatus(String spaceInfo, String status) {
-        java.util.List<String> lines = new java.util.ArrayList<>();
+        List<String> lines = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/parking_spaces.csv"))) {
             String line;
             while ((line = br.readLine()) != null) {

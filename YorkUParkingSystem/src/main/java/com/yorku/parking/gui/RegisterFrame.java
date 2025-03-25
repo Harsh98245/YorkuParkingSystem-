@@ -1,17 +1,19 @@
+// ✅ RegisterFrame.java (Final Version)
 package com.yorku.parking.gui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.*;
 
 public class RegisterFrame extends JFrame {
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JRadioButton studentButton, facultyButton, staffButton, visitorButton;
-    private JButton registerButton;
+    private JRadioButton studentBtn, facultyBtn, nonFacultyBtn, visitorBtn;
+    private JButton registerBtn;
 
     public RegisterFrame() {
-        setTitle("User Registration");
+        setTitle("Register");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -27,66 +29,54 @@ public class RegisterFrame extends JFrame {
         panel.add(passwordField);
 
         panel.add(new JLabel("Select Role:"));
-
-        // Role selection using radio buttons
-        JPanel rolePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        studentButton = new JRadioButton("Student");
-        facultyButton = new JRadioButton("Faculty");
-        staffButton = new JRadioButton("NonFaculty");
-        visitorButton = new JRadioButton("Visitor");
-
-        ButtonGroup group = new ButtonGroup();
-        group.add(studentButton);
-        group.add(facultyButton);
-        group.add(staffButton);
-        group.add(visitorButton);
-
-        rolePanel.add(studentButton);
-        rolePanel.add(facultyButton);
-        rolePanel.add(staffButton);
-        rolePanel.add(visitorButton);
+        JPanel rolePanel = new JPanel(new FlowLayout());
+        studentBtn = new JRadioButton("Student");
+        facultyBtn = new JRadioButton("Faculty");
+        nonFacultyBtn = new JRadioButton("NonFaculty");
+        visitorBtn = new JRadioButton("Visitor");
+        ButtonGroup roleGroup = new ButtonGroup();
+        roleGroup.add(studentBtn);
+        roleGroup.add(facultyBtn);
+        roleGroup.add(nonFacultyBtn);
+        roleGroup.add(visitorBtn);
+        rolePanel.add(studentBtn);
+        rolePanel.add(facultyBtn);
+        rolePanel.add(nonFacultyBtn);
+        rolePanel.add(visitorBtn);
         panel.add(rolePanel);
 
-        registerButton = new JButton("Register");
-        panel.add(new JLabel()); // filler
-        panel.add(registerButton);
+        registerBtn = new JButton("Register");
+        panel.add(registerBtn);
 
-        registerButton.addActionListener(e -> registerUser());
+        registerBtn.addActionListener(this::registerUser);
 
         add(panel);
         setVisible(true);
     }
 
-    private void registerUser() {
+    private void registerUser(ActionEvent e) {
         String email = emailField.getText().trim();
-        String password = new String(passwordField.getPassword());
+        String password = new String(passwordField.getPassword()).trim();
+        String role = studentBtn.isSelected() ? "student" :
+                      facultyBtn.isSelected() ? "faculty" :
+                      nonFacultyBtn.isSelected() ? "non-faculty staff" :
+                      visitorBtn.isSelected() ? "visitor" : "";
 
-        String userType = null;
-        if (studentButton.isSelected()) userType = "Student";
-        else if (facultyButton.isSelected()) userType = "Faculty";
-        else if (staffButton.isSelected()) userType = "Non-Faculty Staff";
-        else if (visitorButton.isSelected()) userType = "Visitor";
-
-        if (email.isEmpty() || password.isEmpty() || userType == null) {
-            JOptionPane.showMessageDialog(this, "Please fill all fields and select a role.");
+        if (email.isEmpty() || password.isEmpty() || role.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields.");
             return;
         }
 
-        if (!password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$")) {
-            JOptionPane.showMessageDialog(this,
-                "Password must contain uppercase, lowercase, number, and symbol.",
-                "Error", JOptionPane.ERROR_MESSAGE);
+        try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/users.csv", true))) {
+            out.println(email + "," + password + "," + role);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error saving registration.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        try (FileWriter fw = new FileWriter("src/main/resources/users.csv", true);
-             BufferedWriter bw = new BufferedWriter(fw);
-             PrintWriter out = new PrintWriter(bw)) {
-            out.println(email + "," + password + "," + userType);
-            JOptionPane.showMessageDialog(this, "Registration Successful!");
-            dispose();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        JOptionPane.showMessageDialog(this, "Registration successful!");
+        dispose();
+        new LoginFrame(); // auto-login redirection
     }
 }

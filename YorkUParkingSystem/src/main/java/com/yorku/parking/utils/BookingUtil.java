@@ -62,6 +62,15 @@ public class BookingUtil {
 	    inputFile.delete();
 	    tempFile.renameTo(inputFile);
 	}
+	
+	public static void saveBooking(String username, String plate, String space, int hours) {
+	    try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/bookings.csv", true))) {
+	        out.println(username + "," + plate + "," + space + "," + hours);
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
+
 
 
 
