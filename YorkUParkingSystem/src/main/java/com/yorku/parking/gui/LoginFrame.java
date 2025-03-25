@@ -1,9 +1,14 @@
+
+
 package com.yorku.parking.gui;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-//import com.yorku.parking.utils.CredentialsValidator;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 
 public class LoginFrame extends JFrame {
 
@@ -37,12 +42,26 @@ public class LoginFrame extends JFrame {
 
         gbc.gridy++;
         JButton managerLoginButton = new JButton("Manager Login");
-        managerLoginButton.addActionListener(e -> new RoleBasedLoginFrame("Manager"));
+        managerLoginButton.addActionListener(e -> {
+            new ManagerDashboardFrame(); // Launch manager dashboard
+            dispose(); // Close the current login frame
+        });
         add(managerLoginButton, gbc);
+
+
+
 
         gbc.gridy++;
         JButton superManagerLoginButton = new JButton("Super Manager Login");
-        superManagerLoginButton.addActionListener(e -> new RoleBasedLoginFrame("SuperManager"));
+        superManagerLoginButton.addActionListener(e -> {
+            String username = JOptionPane.showInputDialog(this, "Enter Super Manager Username:");
+            String password = JOptionPane.showInputDialog(this, "Enter Password:");
+            if (validateSuperManager(username, password)) {
+                new SuperManagerPanel(username);
+            } else {
+                JOptionPane.showMessageDialog(this, "Invalid Super Manager credentials.");
+            }
+        });
         add(superManagerLoginButton, gbc);
 
         gbc.gridy++;
@@ -51,6 +70,22 @@ public class LoginFrame extends JFrame {
         add(registerButton, gbc);
 
         setVisible(true);
+    }
+
+    private boolean validateSuperManager(String username, String password) {
+        try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/users.csv"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 3 && parts[0].equals(username)
+                        && parts[1].equals(password) && parts[2].equalsIgnoreCase("SuperManager")) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public static void main(String[] args) {
