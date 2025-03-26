@@ -34,23 +34,24 @@ public class DashboardFrame extends JFrame {
         bookingInfoArea = new JTextArea(10, 50);
         bookingInfoArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(bookingInfoArea);
-        panel.add(new JLabel("=== Your Bookings ==="), "span");
+       // panel.add(new JLabel("=== Your Bookings ==="), "span");
         panel.add(scrollPane, "span, growx");
 
         // Booking-related buttons
         JButton bookButton = new JButton("Book Parking");
         JButton cancelButton = new JButton("Cancel Booking");
         JButton extendButton = new JButton("Extend Booking");
-
+        JButton backButton = new JButton("Back");
+        
         JButton refreshButton = new JButton("Refresh");
         JButton notifyButton = new JButton("Notifications");
         JButton navButton = new JButton("Navigate to My Spot");
-
+        
         bookButton.addActionListener(e -> {
             dispose();
             new BookingFrame(username);  // Go to booking GUI
         });
-
+        backButton.addActionListener(e -> goback());
         cancelButton.addActionListener(e -> cancelBooking());
         extendButton.addActionListener(e -> extendBooking());
         refreshButton.addActionListener(e -> loadBookings());
@@ -60,6 +61,7 @@ public class DashboardFrame extends JFrame {
 
         if (!isManager) {
             panel.add(bookButton, "span, growx");
+            panel.add(backButton, "span, growx");
         }
 
         // Only show cancel/extend buttons if booking exists
@@ -116,7 +118,12 @@ public class DashboardFrame extends JFrame {
         setVisible(true);
     }
 
-    private void loadBookings() {
+    private void goback() {
+		dispose();
+		new WelcomeFrame();
+	}
+
+	private void loadBookings() {
         List<String> bookings = BookingUtil.getBookingsForUser(username);
         StringBuilder sb = new StringBuilder("=== Your Bookings ===\n");
         for (String booking : bookings) {

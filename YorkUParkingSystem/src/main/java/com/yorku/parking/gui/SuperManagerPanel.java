@@ -23,16 +23,24 @@ public class SuperManagerPanel extends JFrame {
 
         JButton generateBtn = new JButton("Generate Manager Account");
         generateBtn.addActionListener(this::generateAccount);
-
+        
+        JButton backBtn = new JButton("Back");
+        backBtn.addActionListener(e -> goBack());
+        
         outputArea = new JTextArea(5, 40);
         outputArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(outputArea);
 
         panel.add(generateBtn, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(backBtn, BorderLayout.SOUTH);
 
         add(panel);
         setVisible(true);
+    }
+    private void goBack() {
+    	dispose();
+    	new WelcomeFrame();
     }
 
     private void generateAccount(ActionEvent e) {

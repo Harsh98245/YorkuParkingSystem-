@@ -8,7 +8,7 @@ import java.io.*;
 public class RoleBasedLoginFrame extends JFrame {
     private JTextField userField;
     private JPasswordField passField;
-    private JButton loginBtn, registerBtn;
+    private JButton loginBtn, registerBtn, backBtn;
     private String loginType;
     private ButtonGroup roleGroup;
     private JPanel rolePanel;
@@ -74,6 +74,7 @@ public class RoleBasedLoginFrame extends JFrame {
 
         loginBtn = new JButton("Login");
         registerBtn = new JButton("Register");
+        backBtn = new JButton("Back");
 
         gbc.gridx = 0;
         gbc.gridy = 4;
@@ -82,6 +83,12 @@ public class RoleBasedLoginFrame extends JFrame {
 
         gbc.gridx = 1;
         add(registerBtn, gbc);
+
+        // Add the back button
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        add(backBtn, gbc);
 
         loginBtn.addActionListener(e -> {
             String username = userField.getText().trim();
@@ -117,6 +124,12 @@ public class RoleBasedLoginFrame extends JFrame {
         registerBtn.addActionListener(e -> {
             dispose();
             new RegisterFrame();
+        });
+
+        // Action for back button
+        backBtn.addActionListener(e -> {
+            dispose();
+            new WelcomeFrame(); // Go back to WelcomeFrame
         });
     }
 
