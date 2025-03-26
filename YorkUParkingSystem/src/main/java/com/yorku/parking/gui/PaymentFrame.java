@@ -120,11 +120,11 @@ public class PaymentFrame extends JFrame {
         } else if ("Non-Faculty".equals(role)) {
             rate = 10.0;
         } else {
-            rate = 10.0;  // For "Visitor"
+            rate = 15.0;  // For "Visitor"
         }
 
-        double deposit = hours * rate;  // Deposit for the selected hours
-        double total = deposit + amount;
+        double deposit = rate;  // Deposit for the selected hours
+        double total = deposit*hours+ deposit ;
 
         // Show deposit and total in a dialog box
         JOptionPane.showMessageDialog(this, "Deposit: $" + deposit + "\nTotal: $" + total);

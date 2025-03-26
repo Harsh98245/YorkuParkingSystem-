@@ -153,15 +153,15 @@ public class BookingFrame extends JFrame {
         } else if (role.equalsIgnoreCase("NonFaculty")) {
             rate = 10.0;
         } else if (role.equalsIgnoreCase("Visitor")) {
-            rate = 10.0;
+            rate = 15.0;
         }
 
         // Calculate the number of hours between start and end time
         int hours = calculateHours(startTime, endTime);
         
         // Calculate the deposit and total
-        double deposit = rate * hours / 2; // Assuming deposit is half the total cost
-        double total = rate * hours;
+        double deposit = rate ; // Assuming deposit is half the total cost
+        double total = rate * hours+deposit;
 
         // Show the confirmation dialog box with deposit and total
         String message = String.format("Deposit: $%.2f\nTotal: $%.2f", deposit, total);
