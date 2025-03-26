@@ -8,9 +8,6 @@ import java.awt.event.ActionEvent;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Random;
 
 public class PaymentFrame extends JFrame {
@@ -19,33 +16,42 @@ public class PaymentFrame extends JFrame {
     private JTextField mobileNumberField, otpField;
     private JButton payButton, cancelButton, sendOtpButton;
     private JPanel inputPanel;
-    private String username, plate, space;
-    private double amount;
+    private String username, plate, space, role;
+    private double amount, total;
     private Runnable onPaymentSuccess;
     private String generatedOtp = "";
+    private int hours;
 
-    public PaymentFrame(String username, String plate, String space, double amount, Runnable onPaymentSuccess) {
+    public PaymentFrame(String username, String space, String role, int hours, double total) {
         this.username = username;
-        this.plate = plate;
         this.space = space;
-        this.amount = amount;
-        this.onPaymentSuccess = onPaymentSuccess;
+        this.role = role;
+        this.hours = hours;
+        this.total = total;
 
         setTitle("Payment");
         setSize(420, 300);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
+        initComponents();  // Initialize the components
+        setVisible(true);
+    }
+
+    private void initComponents() {
+        // Setup for payment method dropdown
         JPanel methodPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         methodPanel.add(new JLabel("Payment Method:"));
         methodDropdown = new JComboBox<>(new String[]{"Credit Card", "Mobile Payment"});
         methodPanel.add(methodDropdown);
         add(methodPanel, BorderLayout.NORTH);
 
+        // Panel for input fields based on the selected method
         inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         add(inputPanel, BorderLayout.CENTER);
 
+        // Panel for buttons
         JPanel buttonPanel = new JPanel();
         payButton = new JButton("Pay");
         cancelButton = new JButton("Cancel");
@@ -53,12 +59,12 @@ public class PaymentFrame extends JFrame {
         buttonPanel.add(cancelButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
+        // Add listeners
         methodDropdown.addActionListener(e -> updateFields());
         payButton.addActionListener(this::handlePayment);
         cancelButton.addActionListener(e -> dispose());
 
-        updateFields();
-        setVisible(true);
+        updateFields();  // Initial setup
     }
 
     private void updateFields() {
@@ -100,10 +106,30 @@ public class PaymentFrame extends JFrame {
     }
 
     private void handlePayment(ActionEvent e) {
+        // Handle payment logic here
         String method = (String) methodDropdown.getSelectedItem();
         PaymentStrategy strategy;
         String identifier;
 
+        // Determine deposit and total based on role
+        double rate;
+        if ("Student".equals(role)) {
+            rate = 5.0;
+        } else if ("Faculty".equals(role)) {
+            rate = 8.0;
+        } else if ("Non-Faculty".equals(role)) {
+            rate = 10.0;
+        } else {
+            rate = 10.0;  // For "Visitor"
+        }
+
+        double deposit = hours * rate;  // Deposit for the selected hours
+        double total = deposit + amount;
+
+        // Show deposit and total in a dialog box
+        JOptionPane.showMessageDialog(this, "Deposit: $" + deposit + "\nTotal: $" + total);
+
+        // Proceed to payment
         if ("Credit Card".equals(method)) {
             String number = cardNumberField.getText().trim();
             String expiry = expiryField.getText().trim();
@@ -116,20 +142,6 @@ public class PaymentFrame extends JFrame {
 
             if (!cvv.matches("\\d{3}")) {
                 JOptionPane.showMessageDialog(this, "CVV must be 3 digits.");
-                return;
-            }
-
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
-                YearMonth expDate = YearMonth.parse(expiry, formatter);
-                YearMonth now = YearMonth.now();
-                YearMonth maxAllowed = YearMonth.now().plusYears(4);
-                if (expDate.isBefore(now) || expDate.isAfter(maxAllowed)) {
-                    JOptionPane.showMessageDialog(this, "Expiry date must be within 4 years from now.");
-                    return;
-                }
-            } catch (DateTimeParseException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid expiry date format. Use MM/YY.");
                 return;
             }
 
@@ -155,7 +167,7 @@ public class PaymentFrame extends JFrame {
         }
 
         PaymentContext context = new PaymentContext(strategy);
-        boolean success = context.processPayment(amount);
+        boolean success = context.processPayment(total);
 
         if (success) {
             logPayment(method, identifier);
