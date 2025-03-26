@@ -68,7 +68,7 @@ public class DashboardFrame extends JFrame {
         List<String> bookingsList = BookingUtil.getBookingsForUser(username);
         String bookingText = String.join("\n", bookingsList).trim();
 
-        if (bookingsList.size() > 1) { // Means user has at least 1 booking (heading + 1+ line)
+        if (!bookingsList.isEmpty()) { // Means user has at least one booking
             panel.add(cancelButton);
             panel.add(extendButton);
         }
