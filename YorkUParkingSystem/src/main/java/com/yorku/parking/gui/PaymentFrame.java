@@ -124,7 +124,7 @@ public class PaymentFrame extends JFrame {
         }
 
         double deposit = rate;  // Deposit for the selected hours
-        double total = deposit*hours+ deposit ;
+        double total = rate*hours+ deposit ;
 
         // Show deposit and total in a dialog box
         JOptionPane.showMessageDialog(this, "Deposit: $" + deposit + "\nTotal: $" + total);
