@@ -112,22 +112,22 @@ public class PaymentFrame extends JFrame {
         String identifier;
 
         // Determine deposit and total based on role
-        double rate;
-        if ("Student".equals(role)) {
-            rate = 5.0;
-        } else if ("Faculty".equals(role)) {
-            rate = 8.0;
-        } else if ("Non-Faculty".equals(role)) {
-            rate = 10.0;
-        } else {
-            rate = 15.0;  // For "Visitor"
-        }
-
-        double deposit = rate;  // Deposit for the selected hours
-        double total = rate*hours+ deposit ;
-
-        // Show deposit and total in a dialog box
-        JOptionPane.showMessageDialog(this, "Deposit: $" + deposit + "\nTotal: $" + total);
+//        double rate;
+//        if ("Student".equals(role)) {
+//            rate = 5.0;
+//        } else if ("Faculty".equals(role)) {
+//            rate = 8.0;
+//        } else if ("Non-Faculty".equals(role)) {
+//            rate = 10.0;
+//        } else {
+//            rate = 15.0;  // For "Visitor"
+//        }
+//
+//        double deposit = rate;  // Deposit for the selected hours
+//        double total = rate*hours+ deposit ;
+//
+//        // Show deposit and total in a dialog box
+//        JOptionPane.showMessageDialog(this, "Deposit: $" + deposit + "\nTotal: $" + total);
 
         // Proceed to payment
         if ("Credit Card".equals(method)) {
