@@ -1,17 +1,13 @@
-username,method,identifier,amount
-Harsh011@my.yorku.ca,Credit Card,th5ruon,30.0
-Harsh011@my.yorku.ca,Credit Card,,s x,30.0
-harsh0111@my.gmail.com,Credit Card,kefnrkmvrkfnrkmf,sdjndnc,PS007 - A7 (LotA),0
-harsh0111@my.gmail.com,Credit Card,dvvrffewfr,fgrgre,PS008 - A8 (LotA),0
-harsh0111@my.gmail.com,Credit Card,fffdd,cndncd,PS013 - A13 (LotA),0
-harsh0111@my.gmail.com,Credit Card,rmomfkfmkf,defev,PS009 - A9 (LotA),0
-harsh0111@my.gmail.com,Credit Card,oddjfknkf,dcdomc,PS010 - A10 (LotA),0
-harsh0111@my.gmail.com,Credit Card,msdx,wmdm,PS011 - A11 (LotA),0
-khatri,Credit Card,1234567812345678,0.0
-khatri,Credit Card,1234123412341234,0.0
-harsh0111@my.gmail.com,Credit Card,1234567812345678,0.0
-harsh0111@my.gmail.com,Credit Card,1234567812345678,0.0
-harsh0111@my.gmail.com,Credit Card,1234567812345678,0.0
-harsh0111@my.gmail.com,Credit Card,1234567812345678,0.0
-harsh0111@my.gmail.com,Credit Card,1212121212121212,0.0
-harsh0111@my.gmail.com,Mobile Payment,2342342345,0.0
+PaymentID,Username,Method,Card/Mobile,Amount
+PAY502134,john,Credit Card,1234567812345678,5.0
+PAY854210,john,Credit Card,1234567812345678,15.0
+
+PAY297810,harshrand@gmail.com,Credit Card,1234567812345678,5.0
+PAY725826,harshrand@gmail.com,Credit Card,1234567812345678,10.0
+PAY919565,harshrand@gmail.com,Credit Card,1234123412341234,10.0
+PAY90164,harsh011,Credit Card,1234567812345678,5.0
+PAY620792,harsh011,Credit Card,1234567812345678,10.0
+PAY88458,harsh011,Credit Card,1234567812345678,5.0
+PAY197734,harsh011,Credit Card,1234567812345678,10.0
+PAY101719,ali011,Credit Card,1234567812345678,30.0
+PAY156067,ali011,Credit Card,1234123412341234,30.0

@@ -19,16 +19,20 @@ public class RegisterFrame extends JFrame {
 
         JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
 
+        // Email field
         panel.add(new JLabel("Email:"));
         emailField = new JTextField();
         panel.add(emailField);
 
+        // Password field
         panel.add(new JLabel("Password:"));
         passwordField = new JPasswordField();
         panel.add(passwordField);
 
+        // Role selection with 2x2 GridLayout
         panel.add(new JLabel("Select Role:"));
-        JPanel rolePanel = new JPanel(new FlowLayout());
+        JPanel rolePanel = new JPanel(new GridLayout(2, 2, 5, 5)); // 2 rows x 2 columns with spacing
+
         studentBtn = new JRadioButton("Student");
         facultyBtn = new JRadioButton("Faculty");
         nonFacultyBtn = new JRadioButton("NonFaculty");
@@ -39,6 +43,7 @@ public class RegisterFrame extends JFrame {
         roleGroup.add(facultyBtn);
         roleGroup.add(nonFacultyBtn);
         roleGroup.add(visitorBtn);
+
         rolePanel.add(studentBtn);
         rolePanel.add(facultyBtn);
         rolePanel.add(nonFacultyBtn);
@@ -51,9 +56,10 @@ public class RegisterFrame extends JFrame {
         backBtn = new JButton("Back");
         buttonPanel.add(registerBtn);
         buttonPanel.add(backBtn);
-        panel.add(new JLabel()); // Placeholder
+        panel.add(new JLabel()); // Placeholder for spacing
         panel.add(buttonPanel);
 
+        // Button actions
         registerBtn.addActionListener(this::registerUser);
         backBtn.addActionListener(e -> {
             dispose();
@@ -87,6 +93,6 @@ public class RegisterFrame extends JFrame {
 
         JOptionPane.showMessageDialog(this, "Registration successful!");
         dispose();
-        new WelcomeFrame(); // auto-login redirection
+        new WelcomeFrame(); // redirect to welcome screen
     }
 }

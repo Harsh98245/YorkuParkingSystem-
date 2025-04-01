@@ -1,27 +1,7 @@
-email,plate,parkingSpot,duration
-john.doe@yorku.ca,AB1234,PS001 - A1 (LotA),2
-jane.smith@yorku.ca,CD5678,PS002 - A2 (LotA),1
-pratham@gmail.com,nadcxjnh,PS001 - A1 (LotA),2
-pratham@gmail.com,dhue,PS002 - A2 (LotA),2
-Harsh011@my.yorku.ca,harsjnmm,PS003 - A3 (LotA),15
-Harsh011@my.yorku.ca,harshs,PS004 - A4 (LotA),2
-Harsh011@my.yorku.ca,ccc,PS005 - A5 (LotA),1
-harsh0111@my.gmail.com,fgrgre,PS008 - A8 (LotA),1
-harsh0111@my.gmail.com,fgrgre,PS008 - A8 (LotA),0
-harsh0111@my.gmail.com,cndncd,PS013 - A13 (LotA),1
-harsh0111@my.gmail.com,cndncd,PS013 - A13 (LotA),0
-harsh0111@my.gmail.com,defev,PS009 - A9 (LotA),1
-harsh0111@my.gmail.com,defev,PS009 - A9 (LotA),0
-harsh0111@my.gmail.com,dcdomc,PS010 - A10 (LotA),0
-harsh0111@my.gmail.com,wmdm,PS011 - A11 (LotA),0
-harsh0111@my.gmail.com,kmndlc,PS012 - A12 (LotA),1
-harsh0111@my.gmail.com,61636,PS014 - A14 (LotA),2
-harsh0111@my.gmail.com,N1234,PS015 - A15 (LotA),2
-khatri,n12,PS001 - A4,2
-khatri,m32,PS001 - A1,2
-harsh0111@my.gmail.com,lakjsh,PS001 - A1,2
-harsh0111@my.gmail.com,harshja,PS001 - A1,2
-harsh0111@my.gmail.com,N1234,PS001 - A4,2
-harsh0111@my.gmail.com,lsncinc,PS001 - B3,2
-harsh0111@my.gmail.com,1234,PS001 - A2,2
-harsh0111@my.gmail.com,1243,PS001 - A1,4
+BookingID,Username,Plate,Space,Hours
+BK251300,john,ABC123,PS001-A1,3
+BK427227,harshrand@gmail.com,N1234,PS001-A5,2
+BK115978,harsh011,harsh11,PS001-A1,2
+BK751721,harsh011,123456,PS001-A3,2
+BK956481,ali011,N123,PS001-A5,3
+BK648819,ali011,678899,PS001-A1,3

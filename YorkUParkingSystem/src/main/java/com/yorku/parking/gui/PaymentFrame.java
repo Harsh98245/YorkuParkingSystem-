@@ -5,9 +5,7 @@ import com.yorku.parking.payment.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Random;
 
 public class PaymentFrame extends JFrame {
@@ -17,17 +15,19 @@ public class PaymentFrame extends JFrame {
     private JButton payButton, cancelButton, sendOtpButton;
     private JPanel inputPanel;
     private String username, plate, space, role;
-    private double amount, total;
+    private double amount;
     private Runnable onPaymentSuccess;
     private String generatedOtp = "";
     private int hours;
+    private boolean isDeposit;
 
-    public PaymentFrame(String username, String space, String role, int hours, double total) {
+    public PaymentFrame(String username, String space, String role, int hours, double amount, boolean isDeposit) {
         this.username = username;
         this.space = space;
         this.role = role;
         this.hours = hours;
-        this.total = total;
+        this.amount = amount;
+        this.isDeposit = isDeposit;
 
         setTitle("Payment");
         setSize(420, 300);
@@ -35,23 +35,20 @@ public class PaymentFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        initComponents();  // Initialize the components
+        initComponents();
         setVisible(true);
     }
 
     private void initComponents() {
-        // Setup for payment method dropdown
         JPanel methodPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         methodPanel.add(new JLabel("Payment Method:"));
         methodDropdown = new JComboBox<>(new String[]{"Credit Card", "Mobile Payment"});
         methodPanel.add(methodDropdown);
         add(methodPanel, BorderLayout.NORTH);
 
-        // Panel for input fields based on the selected method
         inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         add(inputPanel, BorderLayout.CENTER);
 
-        // Panel for buttons
         JPanel buttonPanel = new JPanel();
         payButton = new JButton("Pay");
         cancelButton = new JButton("Cancel");
@@ -59,12 +56,11 @@ public class PaymentFrame extends JFrame {
         buttonPanel.add(cancelButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // Add listeners
         methodDropdown.addActionListener(e -> updateFields());
         payButton.addActionListener(this::handlePayment);
         cancelButton.addActionListener(e -> dispose());
 
-        updateFields();  // Initial setup
+        updateFields();
     }
 
     private void updateFields() {
@@ -106,30 +102,10 @@ public class PaymentFrame extends JFrame {
     }
 
     private void handlePayment(ActionEvent e) {
-        // Handle payment logic here
         String method = (String) methodDropdown.getSelectedItem();
         PaymentStrategy strategy;
         String identifier;
 
-        // Determine deposit and total based on role
-        double rate;
-        if ("Student".equals(role)) {
-            rate = 5.0;
-        } else if ("Faculty".equals(role)) {
-            rate = 8.0;
-        } else if ("Non-Faculty".equals(role)) {
-            rate = 10.0;
-        } else {
-            rate = 15.0;  // For "Visitor"
-        }
-
-        double deposit = rate;  // Deposit for the selected hours
-        double total = rate*hours+ deposit ;
-
-        // Show deposit and total in a dialog box
-        JOptionPane.showMessageDialog(this, "Deposit: $" + deposit + "\nTotal: $" + total);
-
-        // Proceed to payment
         if ("Credit Card".equals(method)) {
             String number = cardNumberField.getText().trim();
             String expiry = expiryField.getText().trim();
@@ -167,11 +143,15 @@ public class PaymentFrame extends JFrame {
         }
 
         PaymentContext context = new PaymentContext(strategy);
-        boolean success = context.processPayment(total);
+        boolean success = context.processPayment(amount);
+
 
         if (success) {
+            if (!isDeposit) {
+                removePreviousDeposit(); // delete earlier deposit if this is a checkout
+            }
             logPayment(method, identifier);
-            JOptionPane.showMessageDialog(this, "Payment Successful. Thank you!");
+            JOptionPane.showMessageDialog(this, "Payment of $" + amount + " Successful. Thank you!");
             dispose();
             if (onPaymentSuccess != null) {
                 onPaymentSuccess.run();
@@ -180,12 +160,53 @@ public class PaymentFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "Payment Failed. Try again.");
         }
     }
+    
 
+    private void removePreviousDeposit() {
+        try {
+            File inputFile = new File("src/main/resources/payments.csv");
+            File tempFile = new File("src/main/resources/payments_temp.csv");
+
+            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+            PrintWriter writer = new PrintWriter(new FileWriter(tempFile));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.contains(username) || !line.contains(String.valueOf(1.0 * getRate(role)))) {
+                    writer.println(line);
+                }
+            }
+
+            writer.close();
+            reader.close();
+
+            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+                System.err.println("Failed to update payment file.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private void logPayment(String method, String number) {
         try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/payments.csv", true))) {
-            out.println(username + "," + method + "," + number + "," + amount);
+            String paymentId = "PAY" + new Random().nextInt(1000000);
+            out.println(paymentId + "," + username + "," + method + "," + number + "," + amount);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+    private double getRate(String role) {
+        return switch (role.toLowerCase()) {
+            case "student" -> 5.0;
+            case "faculty" -> 8.0;
+            case "nonfaculty" -> 10.0;
+            default -> 15.0;
+        };
+    }
+    
+    
+
+    public void setOnPaymentSuccess(Runnable onPaymentSuccess) {
+        this.onPaymentSuccess = onPaymentSuccess;
     }
 }
