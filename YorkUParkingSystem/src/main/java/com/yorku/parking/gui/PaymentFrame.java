@@ -153,6 +153,7 @@ public class PaymentFrame extends JFrame {
             logPayment(method, identifier);
             JOptionPane.showMessageDialog(this, "Payment of $" + amount + " Successful. Thank you!");
             dispose();
+            new DashboardFrame(username, false);
             if (onPaymentSuccess != null) {
                 onPaymentSuccess.run();
             }
