@@ -1,5 +1,3 @@
-
-
 package com.yorku.parking.gui;
 
 import com.yorku.parking.utils.AccountGeneratorUtil;

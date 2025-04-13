@@ -15,5 +15,3 @@ public class MobilePayment implements PaymentStrategy {
         return true;
     }
 }
-
-

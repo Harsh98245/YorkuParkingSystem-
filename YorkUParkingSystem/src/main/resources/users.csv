@@ -1,8 +1,6 @@
-id,email,password,role
-
-harshrand@gmail.com,Alikhan@15,student
-harsh011,harsh011,student
-ali011,Alikhan@15,visitor
-meet,meet@11,student
-meet@11,meet@11,student
-harsh011@,harsh011@,student
+john,pass123,student,enabled
+mary,pass456,faculty,enabled
+admin,admin123,manager,enabled
+bob,pass789,visitor,enabled
+staff,staff123,nonfaculty,enabled
+disabled1,pass000,student,disabled

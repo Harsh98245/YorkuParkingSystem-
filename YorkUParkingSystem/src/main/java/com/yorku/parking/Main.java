@@ -1,10 +1,14 @@
 package com.yorku.parking;
 
+import java.awt.Color;
+import java.awt.Font;
+
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.yorku.parking.gui.WelcomeFrame;
-
-import javax.swing.*;
-import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {

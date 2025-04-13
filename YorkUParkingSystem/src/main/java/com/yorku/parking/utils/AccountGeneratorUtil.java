@@ -1,4 +1,3 @@
-
 package com.yorku.parking.utils;
 
 import java.io.*;

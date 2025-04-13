@@ -85,7 +85,7 @@ public class NavigationFrame extends JFrame {
             }
 
         } catch (IOException e) {
-            outputArea.setText("⚠️ Error reading parking_spaces.csv");
+            outputArea.setText("⚠ Error reading parking_spaces.csv");
             e.printStackTrace();
         }
     }

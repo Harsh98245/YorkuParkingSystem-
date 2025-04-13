@@ -44,7 +44,7 @@ public class NotificationFrame extends JFrame {
                 }
             }
         } catch (IOException e) {
-            messageArea.setText("⚠️ Error reading notifications.");
+            messageArea.setText("⚠ Error reading notifications.");
         }
     }
 

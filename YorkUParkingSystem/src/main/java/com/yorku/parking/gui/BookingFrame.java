@@ -1,11 +1,25 @@
 package com.yorku.parking.gui;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import com.yorku.parking.payment.*;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Random;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import com.yorku.parking.utils.BookingUtil;
 
 public class BookingFrame extends JFrame {
     private String username;
@@ -139,14 +153,7 @@ public class BookingFrame extends JFrame {
         int option = JOptionPane.showConfirmDialog(this, message, "Confirm Booking", JOptionPane.OK_CANCEL_OPTION);
 
         if (option == JOptionPane.OK_OPTION) {
-            try (PrintWriter out = new PrintWriter(new FileWriter("src/main/resources/bookings.csv", true))) {
-                out.println(bookingId + "," + username + "," + licensePlate + "," + selectedSpace + "," + hours);
-            } catch (IOException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error saving booking.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
+            BookingUtil.saveBooking(username, licensePlate, selectedSpace, hours);
             updateSpaceStatus(selectedSpace, "Occupied");
             dispose();
             new PaymentFrame(username, selectedSpace, role, hours, deposit, true); // true = deposit payment
